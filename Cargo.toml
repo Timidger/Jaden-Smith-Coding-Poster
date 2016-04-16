@@ -1,0 +1,6 @@
+[package]
+name = "Jaden-Smith-Coding-Poster"
+version = "0.1.0"
+authors = ["Timidger <APragmaticPlace@gmail.com>"]
+
+[dependencies]
