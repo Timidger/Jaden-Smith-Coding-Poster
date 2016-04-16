@@ -1,0 +1,9 @@
+## Here is how the file is laid out:
+## These are comments, you just need one # for a comment (they are ignored)
+## Empty lines are always removed
+## The script starts from the top, gets the first string on the line
+## Each string is a tweet. If the tweet's length > 150, it doesn't accept it
+## It'll move along until it finds a tweet. When that tweet is used, 
+## It is removed from the file
+Example of a really long tweet. Like look how long this is. So freaking long. It's so freaking long that it will not be accepted by the script and the next one will be chosen instead.
+# Ignored cause comment
