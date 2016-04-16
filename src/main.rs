@@ -3,6 +3,7 @@ extern crate rustc_serialize as rustc_serialize;
 extern crate oauth_client as oauth;
 
 use std::io;
+use std::io::{BufReader, BufWriter};
 use std::io::prelude::*;
 use std::env;
 use std::fs::{File, OpenOptions};
@@ -38,7 +39,7 @@ impl Config {
     pub fn write(&self, path_file: &Path) {
         let mut file = match OpenOptions::new().write(true).create(true).open(path_file) {
             Ok(f) => f,
-            Err(e) => panic!("{}", e),//"Could not find file \"{}\"", path_file),
+            Err(e) => panic!("{}", e),
         };
         let _ = write!(&mut file, "{}\n", &json::encode(self).unwrap());
     }
@@ -58,6 +59,38 @@ fn console_input(prompt: &str) -> String {
 	let stdin = io::stdin();
     let _ = stdin.lock().read_line(&mut line).unwrap();
     line.trim().to_string()
+}
+
+fn random_tweet(tweet_path: &Path) -> String {
+    let mut file = match OpenOptions::new().read(true).write(true).open(tweet_path) {
+        Ok(f) => f,
+        Err(_) => panic!("Please make the file ~/{}", TWEETS_FILE),
+    };
+    let mut reader = BufReader::new(file);
+    let mut buffer = String::new();
+    // The new stuff in the file
+    let mut new_content = String::new();
+    loop {
+        reader.read_line(&mut buffer).unwrap();
+        buffer = buffer.trim_left().into();
+        if buffer.len() <= 150 && !buffer.starts_with("#") && !buffer.is_empty(){
+            // read rest, add to new_content
+            reader.read_to_string(&mut new_content).unwrap();
+            // write contents
+            file = reader.into_inner();
+            drop(file);
+            let file = match OpenOptions::new().read(true).write(true).truncate(true).open(tweet_path) {
+                Ok(f) => f,
+                Err(_) => panic!("Please make the file ~/{}", TWEETS_FILE),
+            };
+            let mut writer = BufWriter::new(file);
+            writer.write_all(&new_content.into_bytes()).unwrap();
+            // return the string we selected
+            return buffer;
+        }
+        new_content = new_content + &buffer;
+        buffer.clear();
+    }
 }
 
 fn main() {
@@ -93,7 +126,10 @@ fn main() {
     let consumer = Token::new(conf.consumer_key, conf.consumer_secret);
     let access = Token::new(conf.access_key, conf.access_secret);
 
-    // updates the status
-    let status = "hello world from a rust script";
-    twitter::update_status(&consumer, &access, &status).unwrap();
+    // Gets a random tweet from the file and posts it
+    let mut tweet_path: PathBuf = env::home_dir().unwrap();
+    tweet_path.push(Path::new(TWEETS_FILE));
+    let tweet = random_tweet(&tweet_path);
+    twitter::update_status(&consumer, &access, &tweet).unwrap();
+    println!("Tweeted!");
 }
