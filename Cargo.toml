@@ -6,3 +6,4 @@ authors = ["Timidger <APragmaticPlace@gmail.com>"]
 [dependencies]
 twitter-api = "*"
 oauth-client = "0.1"
+rustc-serialize = "*"
